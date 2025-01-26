@@ -47,8 +47,8 @@ date_range_df["category"] = category
 date_range_df["product_id"] = product_id 
 date_range_df["user_id"] = user_id 
 
-merge_data = data_range_df.merge(group['daily_sales'],left_index= True,right_index = True, how = "left")
+merge_data = data_range_df.merge(group[['daily_sales']],left_index= True,right_index = True, how = "left")
 
-merge_data["daily_sales"] = merge_data['daily_sales'].fillna(0)
+merge_data["daily_sales"] = merge_data['daily_sales'].fillna(method = "ffill")
 
 final_df = pd.concat([final_df,merge_data])
