@@ -98,4 +98,59 @@ top_3 = df.groupby(
 )['total_sales'].agg('mean').reset_index()[['product_id','total_sales']].nlargest(
     3, 'total_sales'
 )
-print(top_3)
+
+
+'''
+
+Problem 2: Advanced Groupby with Hierarchical Indexing and Complex Aggregation
+You have a dataset that tracks users' interactions with a recommendation system across multiple sessions.
+
+Dataset columns:
+
+session_id: Unique identifier for each session
+user_id: Unique identifier for each user
+category: The category of items viewed (e.g., "sports", "technology")
+view_time: Time spent on the recommendation page
+clicked: Boolean indicating whether the user clicked an item during that session
+timestamp: Exact timestamp of the session start
+Task:
+
+Group the data by user_id and category and calculate the following:
+Total number of sessions
+Total view time
+Click-through rate (CTR): clicked / sessions
+Average view time per session
+Create a hierarchical index with user_id and category, and compute:
+The user's category preference (i.e., which category they spent the most time on across sessions)
+A rolling window of 3 sessions to compute the average view time and CTR.
+Calculate the difference in click-through rates (CTR) before and after the user's preference for a particular category was established (i.e., when the total view time for that category is higher than for other categories).
+Create a heatmap of the CTR for each user_id and category combination to identify any significant patterns.
+'''
+
+
+import pandas as pd
+
+# Create a sample dataset
+data = {
+    "session_id": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    "user_id": [101, 101, 102, 102, 103, 103, 104, 104, 105, 105],
+    "category": ["sports", "technology", "sports", "sports", "technology", "sports", "sports", "technology", "sports", "technology"],
+    "view_time": [12, 5, 8, 15, 10, 14, 7, 6, 11, 9],
+    "clicked": [True, False, True, False, True, False, True, False, True, False],
+    "timestamp": pd.to_datetime([
+        "2025-01-01 10:00:00", "2025-01-01 10:30:00", "2025-01-01 11:00:00",
+        "2025-01-01 11:30:00", "2025-01-01 12:00:00", "2025-01-01 12:30:00",
+        "2025-01-01 13:00:00", "2025-01-01 13:30:00", "2025-01-01 14:00:00",
+        "2025-01-01 14:30:00"
+    ])
+}
+
+df = pd.DataFrame(data)
+
+# 1ST PROBLEMS  
+total_sessions = df.groupby(['user_id', 'category'])['session_id'].transform('count')
+total_view_time = df.groupby(['user_id', 'category'])['view_time'].transform('sum')
+click_through_rate = df.groupby(['user_id', 'category']).apply(
+    lambda x : x['clicked'].sum() / x['session_id'].unique().sum()
+)
+df['average_view_time']  = df.groupby('session_id')['view_time'].transform('mean') 
