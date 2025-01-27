@@ -31,24 +31,26 @@ df = df.sort_values(by="date")
 df['date'] = pd.to_datetime(df['date'] ) 
 
 df['daily_sales'] = df['price'] * df['quantity']
-df.set_index(['category','product_id','user_id','date'],inplace = True)
 
-final_df = pd.DateFrame()
+final_df = pd.DataFrame()
 for (category,product_id,user_id) , group in df.groupby(['category','product_id','user_id']):
-    min_date = df[(df["category"] == category) & (df["product_id"] == product_id) & (df["user_id"] == user_id)]["date"].min()
 
-max_date = df[(df["category"] == category) & (df["product_id"] == product_id) & (df["user_id"] == user_id)]["date"].max()
+    min_date = group["date"].min()
 
-date_range = pd.date_range(start = min_date , end = max_date , freq = "D")
-
-date_range_df = pd.DataFrame(date_range, columns = ["date"])
-date_range_df.set_index("date",inplace = True)
-date_range_df["category"] = category
-date_range_df["product_id"] = product_id 
-date_range_df["user_id"] = user_id 
-
-merge_data = data_range_df.merge(group[['daily_sales']],left_index= True,right_index = True, how = "left")
-
-merge_data["daily_sales"] = merge_data['daily_sales'].fillna(method = "ffill")
-
-final_df = pd.concat([final_df,merge_data])
+    max_date = group["date"].max()
+    
+    date_range = pd.date_range(start = min_date , end = max_date , freq = "D")
+    group.set_index(['date'],inplace = True)
+        date_range_df = pd.DataFrame(date_range, columns = ["date"])
+        date_range_df.set_index("date",inplace = True)
+        date_range_df["category"] = category
+        date_range_df["product_id"] = product_id 
+        date_range_df["user_id"] = user_id 
+        
+        merge_data = date_range_df.merge(group[['daily_sales']],left_index= True,right_index = True, how = "left")
+        
+        merge_data["daily_sales"] = merge_data['daily_sales'].fillna(method = "bfill")
+        merge_data['daily_sales'] = merge_data['daily_sales'].fillna(method = 'ffill')
+        
+        final_df = pd.concat([final_df,merge_data])
+    df = final_df.reset_index()
